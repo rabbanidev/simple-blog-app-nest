@@ -2,9 +2,17 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { NextFunction, Request, Response } from 'express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { HttpExceptionFilter } from './common/exception-filters/http-exception.filter';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
+
+  // TODO: Global Interceptors
+  app.useGlobalInterceptors(new ResponseInterceptor());
+
+  // TODO: Global Exception Filters
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   // TODO: Root API Redirect to Swagger
   app.use((req: Request, res: Response, next: NextFunction) => {
