@@ -42,7 +42,7 @@ export class User {
   @Prop({
     type: [{ type: Types.ObjectId, ref: 'Post' }],
   })
-  post_ids: Types.ObjectId[];
+  posts: Types.ObjectId[];
 
   @Prop({
     type: [String],

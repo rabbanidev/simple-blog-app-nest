@@ -34,6 +34,17 @@ export class UserService {
     );
   }
 
+  async findById(id: string) {
+    const user = await this.userModel.findById(id, {
+      refreshTokens: 0,
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
+
   async storeRefreshToken(id: string, token: string): Promise<void> {
     const user = await this.userModel.findById(id);
 

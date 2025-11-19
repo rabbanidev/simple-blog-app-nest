@@ -32,6 +32,15 @@ async function bootstrap(): Promise<void> {
     .setTitle(process.env.APP_NAME || 'Blog App')
     .setDescription('The blogs API description')
     .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        in: 'header',
+      },
+      'access-token',
+    )
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);

@@ -5,5 +5,5 @@ export interface IUser {
   name: string;
   email: string;
   role?: UserRole;
-  post_ids?: string | Types.ObjectId[];
+  posts?: string | Types.ObjectId[];
 }
