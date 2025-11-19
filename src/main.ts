@@ -4,9 +4,15 @@ import { NextFunction, Request, Response } from 'express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { HttpExceptionFilter } from './common/exception-filters/http-exception.filter';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
+
+  // TODO: Global Prefix add all API routes
+  app.setGlobalPrefix('api');
+
+  app.useGlobalPipes(new ValidationPipe());
 
   // TODO: Global Interceptors
   app.useGlobalInterceptors(new ResponseInterceptor());

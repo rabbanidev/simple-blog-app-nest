@@ -3,3 +3,8 @@ export enum Environment {
   Production = 'production',
   Test = 'test',
 }
+
+export enum UserRole {
+  Admin = 'admin',
+  User = 'user',
+}
