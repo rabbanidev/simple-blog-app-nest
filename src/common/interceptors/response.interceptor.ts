@@ -16,7 +16,7 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, any> {
     return next.handle().pipe(
       map((reponseData: IControllerData): IApiResponse => {
         const data = (
-          reponseData?.data?.data ? reponseData.data.data : reponseData.data
+          reponseData?.data?.data ? reponseData.data.data : reponseData?.data
         ) as GenericType<T>;
         return {
           success: reponseData?.success ?? true,

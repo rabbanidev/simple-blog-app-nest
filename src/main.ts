@@ -12,7 +12,14 @@ async function bootstrap(): Promise<void> {
   // TODO: Global Prefix add all API routes
   app.setGlobalPrefix('api');
 
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+    }),
+  );
 
   // TODO: Global Interceptors
   app.useGlobalInterceptors(new ResponseInterceptor());
