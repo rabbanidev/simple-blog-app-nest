@@ -9,8 +9,8 @@ import { CommentModule } from './modules/features/comment/comment.module';
 
 @Module({
   imports: [
-    UserModule,
     AuthModule,
+    UserModule,
     BlogModule,
     CommentModule,
 

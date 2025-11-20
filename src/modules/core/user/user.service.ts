@@ -2,8 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { IUser } from './interfaces/user.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schemas/user.schema';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { UserRole } from 'src/enum';
+import { JWTPayloadUser } from 'src/interfaces';
+import { IBlog } from 'src/modules/features/blog/interfaces/blog.interface';
 
 @Injectable()
 export class UserService {
@@ -63,5 +65,68 @@ export class UserService {
     user.refreshTokens.push(token);
 
     await user.save();
+  }
+
+  async getMyProfile(loginUser: JWTPayloadUser): Promise<IUser> {
+    const result = await this.userModel
+      .findById(loginUser.userId, {
+        refreshTokens: 0,
+        posts: 0,
+      })
+      .lean();
+
+    if (!result) {
+      throw new NotFoundException('User not found');
+    }
+
+    return result;
+  }
+
+  async getMyPosts(loginUser: JWTPayloadUser): Promise<IBlog[]> {
+    const result = await this.userModel
+      .findById(loginUser.userId, {
+        posts: 1,
+      })
+      .populate({
+        path: 'posts',
+        populate: {
+          path: 'comments',
+          select: 'content user',
+          populate: {
+            path: 'user',
+            select: 'email name',
+          },
+        },
+      });
+
+    if (!result) {
+      throw new NotFoundException('User not found');
+    }
+
+    return result.posts as unknown as IBlog[];
+  }
+
+  async getUserDetails(id: string): Promise<IUser> {
+    const result = await this.userModel
+      .findById(id, {
+        refreshTokens: 0,
+      })
+      .populate({
+        path: 'posts',
+        populate: {
+          path: 'comments',
+          select: 'content user',
+          populate: {
+            path: 'user',
+            select: 'email name',
+          },
+        },
+      });
+
+    if (!result) {
+      throw new NotFoundException('User not found');
+    }
+
+    return result;
   }
 }

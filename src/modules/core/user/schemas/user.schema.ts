@@ -40,7 +40,7 @@ export class User {
   role: UserRole;
 
   @Prop({
-    type: [{ type: Types.ObjectId, ref: 'Post' }],
+    type: [{ type: Types.ObjectId, ref: 'Blog' }],
   })
   posts: Types.ObjectId[];
 
