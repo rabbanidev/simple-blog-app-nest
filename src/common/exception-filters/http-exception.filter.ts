@@ -1,44 +1,56 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
-  ExceptionFilter,
-  Catch,
   ArgumentsHost,
+  Catch,
+  ExceptionFilter,
   HttpException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 
-@Catch(HttpException)
+@Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
-  catch(exception: HttpException, host: ArgumentsHost) {
+  catch(exception: unknown, host: ArgumentsHost) {
+    console.log('exception', exception);
+
     const ctx = host.switchToHttp();
     const res = ctx.getResponse<Response>();
     const req = ctx.getRequest<Request>();
-    const status = exception.getStatus() || 500;
 
-    let message: string = 'Internal server error';
-    let error: unknown = undefined;
+    let status = 500;
+    let message = 'Internal server error';
+    let error: any = undefined;
 
-    const response = exception.getResponse();
-    if (typeof response === 'string') {
-      message = response;
-    } else if (response && typeof response === 'object') {
-      const respObj = response as Record<string, unknown>;
-      if (typeof respObj.message === 'string') {
-        message = respObj.message;
-      } else if (Array.isArray(respObj.message)) {
-        message = respObj.message.join(', ');
-      }
-      if (respObj.error !== undefined) {
+    // If the exception is HttpException (Nest built-in)
+    if (exception instanceof HttpException) {
+      status = exception.getStatus();
+
+      const response = exception.getResponse();
+      if (typeof response === 'string') {
+        message = response;
+      } else if (response && typeof response === 'object') {
+        const respObj = response as Record<string, any>;
+        if (Array.isArray(respObj.message)) {
+          message = respObj.message.join(', ');
+        } else {
+          message = respObj.message || message;
+        }
         error = respObj.error;
       }
-    } else if (exception?.message) {
-      message = exception.message;
+    }
+
+    // If MongoDB wrong ID CastError
+    if ((exception as any)?.name === 'CastError') {
+      status = 400;
+      message = 'Invalid MongoDB ID format';
+      error = 'Bad Request';
     }
 
     res.status(status).json({
       success: false,
       statusCode: status,
       message,
-      error: error ?? undefined,
+      error,
       path: req.url,
     });
   }

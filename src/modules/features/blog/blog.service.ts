@@ -60,7 +60,17 @@ export class BlogService {
       throw error;
     }
 
-    const result = await this.blogModel.findById(id).lean<IBlog>();
+    const result = await this.blogModel
+      .findById(id)
+      .populate({
+        path: 'comments',
+        populate: {
+          path: 'user',
+          select: 'name email',
+        },
+      })
+      .populate('author', 'name email')
+      .lean<IBlog>();
     if (!result) {
       throw new NotFoundException('Blog not found');
     }
@@ -72,14 +82,23 @@ export class BlogService {
     updateBlogDto: UpdateBlogDto,
     loginUser: JWTPayloadUser,
   ) {
-    const result = await this.blogModel.findOneAndUpdate(
-      {
-        _id: id,
-        author: loginUser.userId,
-      },
-      updateBlogDto,
-      { new: true },
-    );
+    const result = await this.blogModel
+      .findOneAndUpdate(
+        {
+          _id: id,
+          author: loginUser.userId,
+        },
+        updateBlogDto,
+        { new: true },
+      )
+      .populate({
+        path: 'comments',
+        populate: {
+          path: 'user',
+          select: 'name email',
+        },
+      })
+      .populate('author', 'name email');
     if (!result) throw new NotFoundException('Blog not found');
 
     return result;
@@ -135,6 +154,13 @@ export class BlogService {
     const [data, totalRecords] = await Promise.all([
       this.blogModel
         .find(condition)
+        .populate({
+          path: 'comments',
+          populate: {
+            path: 'user',
+            select: 'name email',
+          },
+        })
         .populate('author', 'name email')
         .sort(sortConditions)
         .skip(skip)
@@ -155,11 +181,17 @@ export class BlogService {
     };
   }
 
-  async getBlog(id: string): Promise<Blog> {
+  async getBlog(id: string) {
     const result = await this.blogModel
       .findById(id)
-      .populate('author', 'name email')
-      .lean();
+      .populate({
+        path: 'comments',
+        populate: {
+          path: 'user',
+          select: 'name email',
+        },
+      })
+      .populate('author', 'name email');
 
     if (!result) throw new NotFoundException('Blog not found');
 
@@ -169,9 +201,40 @@ export class BlogService {
   async getMyBlogs(loginUser: JWTPayloadUser): Promise<Blog[]> {
     const result = await this.blogModel
       .find({ author: loginUser.userId })
+      .populate({
+        path: 'comments',
+        populate: {
+          path: 'user',
+          select: 'name email',
+        },
+      })
       .populate('author', 'name email')
       .lean();
 
     return result;
   }
+
+  // async blogFindById(id: string) {
+  //   try {
+  //     const result = await this.blogModel
+  //       .findById(id)
+  //       .populate('author', 'name email')
+  //       .lean();
+
+  //     if (!result) throw new NotFoundException('Blog not found');
+
+  //     return result;
+  //   } catch (error: unknown) {
+  //     if (error instanceof NotFoundException) {
+  //       throw new NotFoundException('Blog not found');
+  //     }
+  //     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  //     if ((error as any)?.name === 'CastError') {
+  //       throw new BadRequestException('Invalid blog ID format');
+  //     }
+
+  //     // Optional: other unknown errors
+  //     throw new InternalServerErrorException('Internal Server Error');
+  //   }
+  // }
 }

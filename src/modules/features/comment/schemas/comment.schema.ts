@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 
-export type BlogDocument = HydratedDocument<Blog>;
+export type CommentDocument = HydratedDocument<Comment>;
 
 @Schema({
   timestamps: true,
@@ -9,13 +9,7 @@ export type BlogDocument = HydratedDocument<Blog>;
     virtuals: true,
   },
 })
-export class Blog {
-  @Prop({
-    type: String,
-    required: true,
-  })
-  title: string;
-
+export class Comment {
   @Prop({
     type: String,
     required: true,
@@ -23,16 +17,18 @@ export class Blog {
   content: string;
 
   @Prop({
-    type: [{ type: Types.ObjectId, ref: 'Comment' }],
+    type: Types.ObjectId,
+    ref: 'Blog',
+    required: true,
   })
-  comments: Types.ObjectId[];
+  blog: Types.ObjectId;
 
   @Prop({
     type: Types.ObjectId,
     ref: 'User',
     required: true,
   })
-  author: Types.ObjectId;
+  user: Types.ObjectId;
 }
 
-export const BlogSchema = SchemaFactory.createForClass(Blog);
+export const CommentSchema = SchemaFactory.createForClass(Comment);

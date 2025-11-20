@@ -12,6 +12,6 @@ import { UserModule } from 'src/modules/core/user/user.module';
   ],
   controllers: [BlogController],
   providers: [BlogService],
-  exports: [],
+  exports: [BlogService],
 })
 export class BlogModule {}
